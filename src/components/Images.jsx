@@ -1,0 +1,42 @@
+import { useState, useEffect } from "react";
+import ImageService from "../services/ImageServices";
+import "../styles/App.css";
+
+export default function Images() {
+  const [images, setImages] = useState([]);
+  useEffect(() => {
+    async function fetchImage() {
+      try {
+        const imgs = await ImageService();
+        console.log(imgs);
+        setImages(imgs.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    fetchImage();
+  }, []);
+
+  return (
+    <main className="gallery-page">
+      <header className="gallery-header">
+        <p className="gallery-kicker">The search is on</p>
+        <h1>Find Waldo</h1>
+        <p className="gallery-count">{images.length || 3} scenes to scan</p>
+      </header>
+
+      <section className="image-gallery" aria-label="Where's Waldo scenes">
+        {images.map((img) => (
+          <figure className="image-card" key={img.id}>
+            <span className="image-number">0{img.id}</span>
+            <img
+              src={`http://localhost:3000${img.path}`}
+              alt={`Waldo ${img.id}`}
+            />
+          </figure>
+        ))}
+      </section>
+    </main>
+  );
+}
