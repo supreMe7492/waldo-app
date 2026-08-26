@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
 import ImageService from "../services/ImageServices";
+import { useNavigate } from "react-router-dom";
 import "../styles/App.css";
 
 export default function Images() {
   const [images, setImages] = useState([]);
+  const navigator = useNavigate();
+
+  function navigate(imgId) {
+    navigator(`game/${imgId}`);
+  }
   useEffect(() => {
     async function fetchImage() {
       try {
@@ -33,6 +39,7 @@ export default function Images() {
             <img
               src={`http://localhost:3000${img.path}`}
               alt={`Waldo ${img.id}`}
+              onClick={() => navigate(img.id)}
             />
           </figure>
         ))}
