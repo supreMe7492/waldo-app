@@ -1,4 +1,5 @@
 import ImageService from "../services/ImageServices";
+import GameStart from "../services/GameServies";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +18,8 @@ export default function Game() {
     async function getImage() {
       const img = await ImageService(imgId);
       setImage(img.data);
-      console.log(imgId);
+      const gameData = await GameStart(imgId);
+      console.log(gameData);
     }
 
     getImage();
