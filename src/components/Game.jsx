@@ -1,6 +1,7 @@
 import ImageService from "../services/ImageServices";
 import GetImgChar from "../services/CharacterServices";
 import GameStart from "../services/GameServies";
+import CheckFound from "../services/FindController";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,26 @@ export default function Game() {
 
     getCharacterIds();
   }, [imgId]);
+
+  async function getCords(e) {
+    const img = e.currentTarget;
+    const rect = img.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    const xPixel = e.clientX - rect.left;
+    const yPixel = e.clientY - rect.top;
+
+    const xNorm = xPixel / width;
+    const yNorm = yPixel / height;
+
+    const found = await CheckFound(6, xNorm, yNorm);
+
+    console.log(
+      `Normalized Coordinates: x=${xNorm.toFixed(3)}, y=${yNorm.toFixed(3)}`,
+    );
+    console.log(found);
+  }
 
   return (
     <main className="game-page">
@@ -71,6 +92,7 @@ export default function Game() {
               className="game-image"
               src={`http://localhost:3000${image.path}`}
               alt={`Waldo ${image.id}`}
+              onClick={getCords}
             />
           ) : (
             <p className="game-status">Loading scene...</p>
