@@ -1,4 +1,5 @@
 import ImageService from "../services/ImageServices";
+import GetImgChar from "../services/CharacterServices";
 import GameStart from "../services/GameServies";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -7,22 +8,25 @@ import "../styles/Game.css";
 
 export default function Game() {
   const [image, setImage] = useState({});
+  const [chDatas, setChdatas] = useState([]);
   const { imgId } = useParams();
   const navigate = useNavigate();
   const sceneId = Number(imgId);
-  const characterIds = [1, 2, 3].map(
-    (characterId) => `${sceneId}ch${characterId}`,
-  );
 
   useEffect(() => {
     async function getImage() {
       const img = await ImageService(imgId);
       setImage(img.data);
-      const gameData = await GameStart(imgId);
-      console.log(gameData);
+      await GameStart(imgId);
+    }
+    async function getCharacterIds() {
+      const chData = await GetImgChar(imgId);
+      setChdatas(chData);
     }
 
     getImage();
+
+    getCharacterIds();
   }, [imgId]);
 
   return (
@@ -48,13 +52,13 @@ export default function Game() {
             <h2 id="target-title">Spot all three</h2>
           </div>
           <div className="target-list">
-            {characterIds.map((characterId, index) => (
-              <div className="target-card" key={characterId}>
+            {chDatas.map((character, index) => (
+              <div className="target-card" key={character.chId}>
                 <img
-                  src={`/${characterId}.png`}
-                  alt={`${characterId} target`}
+                  src={`/ch${character.chId}.png`}
+                  alt={`${character.chId} target`}
                 />
-                <span>{characterId}</span>
+                <span>{character.chName}</span>
                 <strong>0{index + 1}</strong>
               </div>
             ))}
