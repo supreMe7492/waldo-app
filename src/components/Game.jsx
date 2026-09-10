@@ -2,14 +2,22 @@ import ImageService from "../services/ImageServices";
 import GetImgChar from "../services/CharacterServices";
 import GameStart from "../services/GameServies";
 import CheckFound from "../services/FindController";
+import CompleteGame from "../services/CompleteGame";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import NotFoundChs from "./NotFoundChs";
 import "../styles/Game.css";
 
 export default function Game() {
   const [image, setImage] = useState({});
   const [chDatas, setChdatas] = useState([]);
+  const [notFoundChIds, setNotChFoundIds] = useState([]);
+  const [clickPosition, setClickPosition] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [playerName, setPlayerName] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { imgId } = useParams();
   const navigate = useNavigate();
   const sceneId = Number(imgId);
@@ -23,6 +31,7 @@ export default function Game() {
     async function getCharacterIds() {
       const chData = await GetImgChar(imgId);
       setChdatas(chData);
+      setNotChFoundIds(chData.map((ch) => ch.chId));
     }
 
     getImage();
@@ -31,6 +40,7 @@ export default function Game() {
   }, [imgId]);
 
   async function getCords(e) {
+    setFeedback(null);
     const img = e.currentTarget;
     const rect = img.getBoundingClientRect();
     const width = rect.width;
@@ -42,12 +52,43 @@ export default function Game() {
     const xNorm = xPixel / width;
     const yNorm = yPixel / height;
 
-    const found = await CheckFound(6, xNorm, yNorm);
+    setClickPosition({ x: xNorm, y: yNorm });
+  }
 
-    console.log(
-      `Normalized Coordinates: x=${xNorm.toFixed(3)}, y=${yNorm.toFixed(3)}`,
-    );
-    console.log(found);
+  async function selectCharacter(chId) {
+    try {
+      const found = await CheckFound(chId, clickPosition.x, clickPosition.y);
+
+      if (found.found) {
+        setFeedback({ type: "success", message: found.message });
+        setNotChFoundIds(found.notFoundIds || []);
+        setClickPosition(null);
+
+        if (found.completed) {
+          setIsComplete(true);
+        }
+      } else {
+        setFeedback({ type: "error", message: found.message || "Try again" });
+        setClickPosition(null);
+      }
+    } catch {
+      setFeedback({ type: "error", message: "Could not check that find" });
+      setClickPosition(null);
+    }
+  }
+
+  async function submitScore(event) {
+    event.preventDefault();
+    if (!playerName.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await CompleteGame(playerName.trim());
+      navigate(`/leaderboard/${imgId}`);
+    } catch {
+      setFeedback({ type: "error", message: "Could not save your score" });
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -66,6 +107,12 @@ export default function Game() {
             Back to scenes
           </button>
         </header>
+
+        {feedback && (
+          <p className={`game-feedback ${feedback.type}`} role="status">
+            {feedback.message}
+          </p>
+        )}
 
         <section className="target-panel" aria-labelledby="target-title">
           <div className="target-heading">
@@ -99,6 +146,38 @@ export default function Game() {
           )}
         </section>
       </div>
+
+      {clickPosition && (
+        <NotFoundChs
+          characters={chDatas.filter((character) =>
+            notFoundChIds.includes(character.chId),
+          )}
+          clickPosition={clickPosition}
+          onSelect={selectCharacter}
+          onClose={() => setClickPosition(null)}
+        />
+      )}
+
+      {isComplete && (
+        <div className="completion-backdrop">
+          <form className="completion-dialog" onSubmit={submitScore}>
+            <p className="game-kicker">Scene complete</p>
+            <h2>Put your name on the board</h2>
+            <label htmlFor="player-name">Your name</label>
+            <input
+              id="player-name"
+              value={playerName}
+              onChange={(event) => setPlayerName(event.target.value)}
+              maxLength={30}
+              autoFocus
+              required
+            />
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "View leaderboard"}
+            </button>
+          </form>
+        </div>
+      )}
     </main>
   );
 }
