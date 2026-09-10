@@ -14,10 +14,9 @@ export default function Images() {
     async function fetchImage() {
       try {
         const imgs = await ImageService();
-        console.log(imgs);
         setImages(imgs.data);
       } catch (err) {
-        console.log(err);
+        // no-op: keep the UI silent while the request fails
       }
     }
 
