@@ -1,5 +1,7 @@
+import { API_URL } from "./ApiConfig";
+
 export default async function CompleteGame(playerName) {
-  const response = await fetch("http://localhost:3000/game/complete", {
+  const response = await fetch(`${API_URL}/game/complete`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

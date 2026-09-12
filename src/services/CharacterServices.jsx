@@ -1,5 +1,7 @@
+import { API_URL } from "./ApiConfig";
+
 export default async function GetImgChar(imgId) {
-  const response = await fetch(`http://localhost:3000/characters/${imgId}`, {
+  const response = await fetch(`${API_URL}/characters/${imgId}`, {
     method: "GET",
   });
 

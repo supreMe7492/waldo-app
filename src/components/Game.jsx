@@ -3,6 +3,7 @@ import GetImgChar from "../services/CharacterServices";
 import GameStart from "../services/GameServies";
 import CheckFound from "../services/FindController";
 import CompleteGame from "../services/CompleteGame";
+import { getImageUrl } from "../services/ApiConfig";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -137,7 +138,7 @@ export default function Game() {
           {image.path ? (
             <img
               className="game-image"
-              src={`http://localhost:3000${image.path}`}
+              src={getImageUrl(image.path)}
               alt={`Waldo ${image.id}`}
               onClick={getCords}
             />

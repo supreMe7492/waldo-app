@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ImageService from "../services/ImageServices";
+import { getImageUrl } from "../services/ApiConfig";
 import { useNavigate } from "react-router-dom";
 import "../styles/App.css";
 
@@ -14,9 +15,9 @@ export default function Images() {
     async function fetchImage() {
       try {
         const imgs = await ImageService();
-        setImages(imgs.data);
-      } catch (err) {
-        // no-op: keep the UI silent while the request fails
+        setImages(Array.isArray(imgs.data) ? imgs.data : []);
+      } catch {
+        setImages([]);
       }
     }
 
@@ -36,7 +37,7 @@ export default function Images() {
           <figure className="image-card" key={img.id}>
             <span className="image-number">0{img.id}</span>
             <img
-              src={`http://localhost:3000${img.path}`}
+              src={getImageUrl(img.path)}
               alt={`Waldo ${img.id}`}
               onClick={() => navigate(img.id)}
             />
